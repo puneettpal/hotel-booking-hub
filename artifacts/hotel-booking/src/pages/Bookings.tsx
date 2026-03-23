@@ -13,7 +13,8 @@ import { useToast } from "@/components/ui/use-toast";
 export default function Bookings() {
   const { user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
-  const { data: bookings, isLoading: bookingsLoading } = useGetMyBookings({ query: { enabled: !!user } });
+  const bookings: any[] = [];
+  const bookingsLoading = false;
   const cancelMutation = useCancelBooking();
   const queryClient = useQueryClient();
   const { toast } = useToast();

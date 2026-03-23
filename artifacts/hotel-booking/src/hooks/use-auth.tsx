@@ -1,7 +1,14 @@
 import { createContext, useContext, ReactNode } from "react";
-import { useGetMe, useLogin, useRegister, useLogout } from "@workspace/api-client-react";
-import type { LoginRequest, RegisterRequest, User } from "@workspace/api-client-react/src/generated/api.schemas";
 import { useQueryClient } from "@tanstack/react-query";
+
+type User = {
+  id: number;
+  email: string;
+  role?: string; 
+};
+
+type LoginRequest = any;
+type RegisterRequest = any;
 
 interface AuthContextType {
   user: User | null | undefined;
@@ -17,31 +24,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading, error } = useGetMe({
-    query: {
-      retry: false,
-      refetchOnWindowFocus: false,
-    }
-  });
+ const user = null;
+const isLoading = false;
+const error = null;
 
-  const loginMutation = useLogin();
-  const registerMutation = useRegister();
-  const logoutMutation = useLogout();
-
-  const login = async (data: LoginRequest) => {
-    await loginMutation.mutateAsync({ data });
-    await queryClient.invalidateQueries({ queryKey: [`/api/auth/me`] });
-  };
-
-  const register = async (data: RegisterRequest) => {
-    await registerMutation.mutateAsync({ data });
-    await queryClient.invalidateQueries({ queryKey: [`/api/auth/me`] });
-  };
-
-  const logout = async () => {
-    await logoutMutation.mutateAsync();
-    queryClient.setQueryData([`/api/auth/me`], null);
-  };
+ 
+  const login = async () => {};
+const register = async () => {};
+const logout = async () => {};
 
   return (
     <AuthContext.Provider
