@@ -28,7 +28,14 @@ router.get("/", requireAuth, async (req, res) => {
 
 router.post("/", requireAuth, async (req, res) => {
   const user = (req as any).user;
-  const { roomId, checkIn, checkOut, guests } = req.body;
+  const getValue = (val: any): string => {
+  return Array.isArray(val) ? val[0] : String(val);
+};
+
+const roomId = Number(getValue(req.body.roomId));
+const checkIn = getValue(req.body.checkIn);
+const checkOut = getValue(req.body.checkOut);
+const guests = Number(getValue(req.body.guests));
 
   if (!roomId || !checkIn || !checkOut || !guests) {
     res.status(400).json({ error: "roomId, checkIn, checkOut, and guests are required" });
@@ -77,7 +84,9 @@ router.post("/", requireAuth, async (req, res) => {
 
 router.delete("/:id", requireAuth, async (req, res) => {
   const user = (req as any).user;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id,
+  10
+);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
