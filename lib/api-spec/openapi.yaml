@@ -1,15 +1,22 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Hotel Booking Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: rooms
+    description: Room management
+  - name: bookings
+    description: Booking management
+  - name: auth
+    description: Authentication
+  - name: admin
+    description: Admin operations
 paths:
   /healthz:
     get:
@@ -24,6 +31,322 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rooms:
+    get:
+      operationId: getRooms
+      tags: [rooms]
+      summary: Get all available rooms
+      parameters:
+        - name: checkIn
+          in: query
+          schema:
+            type: string
+        - name: checkOut
+          in: query
+          schema:
+            type: string
+        - name: guests
+          in: query
+          schema:
+            type: string
+        - name: roomType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+
+  /rooms/{id}:
+    get:
+      operationId: getRoomById
+      tags: [rooms]
+      summary: Get a single room by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Room details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "404":
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bookings:
+    get:
+      operationId: getMyBookings
+      tags: [bookings]
+      summary: Get current user's bookings
+      responses:
+        "200":
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingRequest"
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bookings/{id}:
+    delete:
+      operationId: cancelBooking
+      tags: [bookings]
+      summary: Cancel a booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/rooms:
+    get:
+      operationId: adminGetRooms
+      tags: [admin]
+      summary: Admin - get all rooms
+      responses:
+        "200":
+          description: All rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+    post:
+      operationId: adminCreateRoom
+      tags: [admin]
+      summary: Admin - create room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoomRequest"
+      responses:
+        "201":
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+
+  /admin/rooms/{id}:
+    put:
+      operationId: adminUpdateRoom
+      tags: [admin]
+      summary: Admin - update room
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoomRequest"
+      responses:
+        "200":
+          description: Room updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+    delete:
+      operationId: adminDeleteRoom
+      tags: [admin]
+      summary: Admin - delete room
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Room deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/bookings:
+    get:
+      operationId: adminGetBookings
+      tags: [admin]
+      summary: Admin - get all bookings
+      responses:
+        "200":
+          description: All bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingWithDetails"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +357,235 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - role
+        - createdAt
+
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - name
+        - email
+        - password
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        message:
+          type: string
+      required:
+        - user
+        - message
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        pricePerNight:
+          type: number
+        maxGuests:
+          type: integer
+        imageUrl:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        available:
+          type: boolean
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+      required:
+        - id
+        - name
+        - type
+        - description
+        - pricePerNight
+        - maxGuests
+        - imageUrl
+        - amenities
+        - available
+        - rating
+        - reviewCount
+
+    CreateRoomRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        pricePerNight:
+          type: number
+        maxGuests:
+          type: integer
+        imageUrl:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        available:
+          type: boolean
+      required:
+        - name
+        - type
+        - description
+        - pricePerNight
+        - maxGuests
+        - imageUrl
+        - amenities
+        - available
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        roomId:
+          type: integer
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+        guests:
+          type: integer
+        totalPrice:
+          type: number
+        status:
+          type: string
+          enum: [confirmed, cancelled, pending]
+        createdAt:
+          type: string
+        room:
+          $ref: "#/components/schemas/Room"
+      required:
+        - id
+        - userId
+        - roomId
+        - checkIn
+        - checkOut
+        - guests
+        - totalPrice
+        - status
+        - createdAt
+
+    BookingWithDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        roomId:
+          type: integer
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+        guests:
+          type: integer
+        totalPrice:
+          type: number
+        status:
+          type: string
+          enum: [confirmed, cancelled, pending]
+        createdAt:
+          type: string
+        room:
+          $ref: "#/components/schemas/Room"
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - userId
+        - roomId
+        - checkIn
+        - checkOut
+        - guests
+        - totalPrice
+        - status
+        - createdAt
+
+    CreateBookingRequest:
+      type: object
+      properties:
+        roomId:
+          type: integer
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+        guests:
+          type: integer
+      required:
+        - roomId
+        - checkIn
+        - checkOut
+        - guests
